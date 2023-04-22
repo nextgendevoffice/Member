@@ -1,0 +1,5 @@
+import os
+
+MONGO_URI = os.environ.get('MONGO_URI')
+LINE_CHANNEL_ACCESS_TOKEN = os.environ.get('LINE_CHANNEL_ACCESS_TOKEN')
+LINE_CHANNEL_SECRET = os.environ.get('LINE_CHANNEL_SECRET')
