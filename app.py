@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
@@ -8,9 +9,9 @@ from handlers import handle_text_message
 
 app = Flask(__name__)
 
-# ตั้งค่า LINE Bot
-line_bot_api = LineBotApi("YOUR_CHANNEL_ACCESS_TOKEN")
-handler = WebhookHandler("YOUR_CHANNEL_SECRET")
+# ตั้งค่า LINE Bot ผ่าน environment variables
+line_bot_api = LineBotApi(os.environ["LINE_CHANNEL_ACCESS_TOKEN"])
+handler = WebhookHandler(os.environ["LINE_CHANNEL_SECRET"])
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
