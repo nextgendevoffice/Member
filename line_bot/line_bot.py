@@ -141,7 +141,7 @@ def handle_message(event):
                 print(f"Error: {str(e)}")
                 line_bot_api.reply_message(
                     event.reply_token,
-                    TextSendMessage(text=f"An error occurred while processing the command.")
+                    TextSendMessage(text=f"An error occurred while processing the command: {str(e)}")
                 )
 
     # Handle other text messages and commands...
