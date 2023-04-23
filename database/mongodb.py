@@ -24,3 +24,6 @@ def withdraw_credit(user_id, amount):
 
 def deposit_credit(user_id, amount):
     db.credits.update_one({"user_id": user_id}, {"$inc": {"amount": amount}}, upsert=True)
+    
+def adjust_credit(user_id, amount):
+    db.credits.update_one({"user_id": user_id}, {"$inc": {"amount": amount}}, upsert=True)

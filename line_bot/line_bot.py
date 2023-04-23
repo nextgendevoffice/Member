@@ -3,6 +3,7 @@ from linebot import LineBotApi, WebhookHandler
 from config import LINE_CHANNEL_ACCESS_TOKEN, LINE_CHANNEL_SECRET
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 from database import mongodb
+from config import ADMINS
 
 line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
@@ -55,9 +56,40 @@ def handle_message(event):
                 event.reply_token,
                 TextSendMessage(text="Invalid command format. Example: /withdraw 50")
             )
+    elif user_id in ADMINS:
+        if text.startswith("/addcredit"):
+            target_user_id, amount = parse_user_and_amount(text)
+            if target_user_id and amount:
+                mongodb.adjust_credit(target_user_id, amount)
+                line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(text=f"Increased {amount} credit for user {target_user_id}.")
+                )
+            else:
+                line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(text="Invalid command format. Example: /increase USER_ID 50")
+                )
 
+        elif text.startswith("/downcredit"):
+            target_user_id, amount = parse_user_and_amount(text)
+            if target_user_id and amount:
+                mongodb.adjust_credit(target_user_id, -amount)
+                line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(text=f"Decreased {amount} credit for user {target_user_id}.")
+                )
+            else:
+                line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(text="Invalid command format. Example: /decrease USER_ID 50")
+                )
     # Handle other text messages and commands...
 
 def parse_amount(text):
     match = re.match(r"/withdraw (\d+(\.\d{1,2})?)", text)
     return float(match.group(1)) if match else None
+
+def parse_user_and_amount(text):
+    match = re.match(r"/(increase|decrease) (\w+) (\d+(\.\d{1,2})?)", text)
+    return (match.group(2), float(match.group(3))) if match else (None, None)
