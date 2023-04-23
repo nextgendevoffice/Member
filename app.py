@@ -1,6 +1,5 @@
 from flask import Flask, request, abort
-from line_bot import handler
-from line_bot.line_bot import line_bot_api
+from line_bot.line_bot import line_bot_api, handler
 from database import mongodb
 
 app = Flask(__name__)
