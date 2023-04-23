@@ -44,8 +44,17 @@ def get_withdrawal_requests(status=None):
     query = {"status": status} if status else {}
     return list(db.withdrawal_requests.find(query))
 
-def get_user_withdrawal_requests(user_id):
-    return list(db.withdrawal_requests.find({"user_id": user_id}))
+def approve_withdrawal_request(request_id):
+    request = db.withdrawal_requests.find_one({"request_id": request_id})
+    if request and request["status"] == "pending":
+        update_withdrawal_request_status(request_id, "approved")
+        return True
+    return False
 
-def update_withdrawal_request_status(request_id, status):
-    db.withdrawal_requests.update_one({"request_id": request_id}, {"$set": {"status": status}})
+def reject_withdrawal_request(request_id):
+    request = db.withdrawal_requests.find_one({"request_id": request_id})
+    if request and request["status"] == "pending":
+        update_withdrawal_request_status(request_id, "rejected")
+        return True
+    return False
+
