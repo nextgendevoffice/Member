@@ -40,7 +40,7 @@ def handle_message(event):
             TextSendMessage(text=f"Your current credit is: {credit}")
             )
     elif command == "/withdraw":
-    amount = parse_amount(text)
+        amount = parse_amount(text)
     if amount:
         success, new_credit = mongodb.withdraw_credit(user_id, amount)  # This line was missing in your code
         if success:
@@ -59,8 +59,7 @@ def handle_message(event):
             event.reply_token,
             TextSendMessage(text="Invalid command format. Example: /withdraw 50")
         )
-
-    elif command == "/withdrawhistory":
+        elif command == "/withdrawhistory":
         withdrawal_requests = mongodb.get_user_withdrawal_requests(user_id)
         withdrawal_history = "\n".join([f"Request ID: {req['request_id']} | Amount: {req['amount']} | Status: {req['status']}" for req in withdrawal_requests])
         line_bot_api.reply_message(
@@ -70,7 +69,7 @@ def handle_message(event):
     # Admin commands
     elif user_id in ADMINS:
         
-        if command == "/increase":
+    if command == "/increase":
             target_user_id, amount = parse_user_and_amount(text)
             if target_user_id and amount:
                 mongodb.adjust_credit(target_user_id, amount)
@@ -84,7 +83,7 @@ def handle_message(event):
                     TextSendMessage(text="Invalid command format. Example: /increase USER_ID 50")
                 )
 
-        elif command == "/decrease":
+    elif command == "/decrease":
             target_user_id, amount = parse_user_and_amount(text)
             if target_user_id and amount:
                 mongodb.adjust_credit(target_user_id, -amount)
@@ -97,14 +96,14 @@ def handle_message(event):
                     event.reply_token,
                     TextSendMessage(text="Invalid command format. Example: /decrease USER_ID 50")
                 )
-        elif command == "/withdrawlist":
+    elif command == "/withdrawlist":
             pending_requests = mongodb.get_withdrawal_requests(status="pending")
             pending_list = "\n".join([f"Request ID: {req['request_id']} | User ID: {req['user_id']} | Amount: {req['amount']}" for req in pending_requests])
             line_bot_api.reply_message(
                 event.reply_token,
                 TextSendMessage(text=f"Pending withdrawal requests:\n{pending_list}")
             )
-        elif command == "/approve" or command == "/reject":
+    elif command == "/approve" or command == "/reject":
             _, request_id = text.split(" ")
             if command == "/approve":
                 new_status = "approved"
