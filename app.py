@@ -1,35 +1,23 @@
-import os
 from flask import Flask, request, abort
-from linebot import LineBotApi, WebhookHandler
-from linebot.exceptions import InvalidSignatureError
-from linebot.models import MessageEvent, TextMessage, TextSendMessage
-
-# นำเข้า handler ที่เขียนเอง
-from handlers import handle_text_message
+from line_bot import handler
+from line_bot.line_bot import line_bot_api
+from database import mongodb
 
 app = Flask(__name__)
 
-# ตั้งค่า LINE Bot ผ่าน environment variables
-line_bot_api = LineBotApi(os.environ["LINE_CHANNEL_ACCESS_TOKEN"])
-handler = WebhookHandler(os.environ["LINE_CHANNEL_SECRET"])
-
-@app.route("/webhook", methods=["POST"])
+@app.route("/webhook", methods=['POST'])
 def webhook():
-    signature = request.headers.get("X-Line-Signature")
+    signature = request.headers['X-Line-Signature']
     body = request.get_data(as_text=True)
 
     try:
         handler.handle(body, signature)
-    except InvalidSignatureError:
+    except Exception as e:
         abort(400)
 
-    return "OK"
+    return 'OK'
 
-# สร้าง handler สำหรับข้อความที่เป็น TextMessage
-@handler.add(MessageEvent, message=TextMessage)
-def handle_message(event):
-    handle_text_message(event)
+# Add your LINE@ event handling functions and routing here
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
-    app.run(host="0.0.0.0", port=port)
+    app.run()
