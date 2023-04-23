@@ -58,7 +58,7 @@ def handle_message(event):
             )
     elif user_id in ADMINS:
         
-        if text.startswith("/Increased"):
+        if text.startswith("/increase"):
             target_user_id, amount = parse_user_and_amount(text)
             if target_user_id and amount:
                 mongodb.adjust_credit(target_user_id, amount)
@@ -72,7 +72,7 @@ def handle_message(event):
                     TextSendMessage(text="Invalid command format. Example: /increase USER_ID 50")
                 )
 
-        elif text.startswith("/Decreased"):
+        elif text.startswith("/decrease"):
             target_user_id, amount = parse_user_and_amount(text)
             if target_user_id and amount:
                 mongodb.adjust_credit(target_user_id, -amount)
