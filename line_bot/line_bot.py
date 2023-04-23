@@ -16,6 +16,7 @@ def handle_message(event):
 
     command = text.split(" ")[0].lower()
 
+    # User commands
     if command == "/join":
         # Check if the user is already a member
         existing_member = mongodb.get_member(user_id)
@@ -38,15 +39,15 @@ def handle_message(event):
             event.reply_token,
             TextSendMessage(text=f"Your current credit is: {credit}")
             )
-
     elif command == "/withdraw":
         amount = parse_amount(text)
         if amount:
-            success, new_credit = mongodb.withdraw_credit(user_id, amount)
-            if success:
+            current_credit = mongodb.get_credit(user_id)
+            if current_credit >= amount:
+                request_id = mongodb.create_withdrawal_request(user_id, amount)
                 line_bot_api.reply_message(
                     event.reply_token,
-                    TextSendMessage(text=f"Withdrew {amount} credit. Your new balance is: {new_credit}")
+                    TextSendMessage(text=f"Withdrawal request created. Your request ID is: {request_id}")
                 )
             else:
                 line_bot_api.reply_message(
@@ -58,6 +59,14 @@ def handle_message(event):
                 event.reply_token,
                 TextSendMessage(text="Invalid command format. Example: /withdraw 50")
             )
+    elif command == "/withdrawhistory":
+        withdrawal_requests = mongodb.get_user_withdrawal_requests(user_id)
+        withdrawal_history = "\n".join([f"Request ID: {req['request_id']} | Amount: {req['amount']} | Status: {req['status']}" for req in withdrawal_requests])
+        line_bot_api.reply_message(
+            event.reply_token,
+            TextSendMessage(text=f"Your withdrawal history:\n{withdrawal_history}")
+        )
+    # Admin commands
     elif user_id in ADMINS:
         
         if command == "/increase":
@@ -87,6 +96,41 @@ def handle_message(event):
                     event.reply_token,
                     TextSendMessage(text="Invalid command format. Example: /decrease USER_ID 50")
                 )
+        elif command == "/withdrawlist":
+            pending_requests = mongodb.get_withdrawal_requests(status="pending")
+            pending_list = "\n".join([f"Request ID: {req['request_id']} | User ID: {req['user_id']} | Amount: {req['amount']}" for req in pending_requests])
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text=f"Pending withdrawal requests:\n{pending_list}")
+            )
+        elif command == "/approve" or command == "/reject":
+            _, request_id = text.split(" ")
+            if command == "/approve":
+                new_status = "approved"
+                success = mongodb.approve_withdrawal_request(request_id)
+                if success:
+                    line_bot_api.reply_message(
+                        event.reply_token,
+                        TextSendMessage(text=f"Withdrawal request {request_id} has been {new_status}.")
+                    )
+                else:
+                    line_bot_api.reply_message(
+                        event.reply_token,
+                        TextSendMessage(text=f"Error: withdrawal request {request_id} not found or has already been processed.")
+                    )
+            else:
+                new_status = "rejected"
+                success = mongodb.reject_withdrawal_request(request_id)
+                if success:
+                    line_bot_api.reply_message(
+                        event.reply_token,
+                        TextSendMessage(text=f"Withdrawal request {request_id} has been {new_status}.")
+                    )
+                else:
+                    line_bot_api.reply_message(
+                        event.reply_token,
+                        TextSendMessage(text=f"Error: withdrawal request {request_id} not found or has already been processed.")
+                    )
     # Handle other text messages and commands...
 
 def parse_amount(text):

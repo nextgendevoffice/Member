@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 from config import MONGO_URI
+import uuid
 
 client = MongoClient(MONGO_URI)
 db = client['membership_system']
@@ -24,6 +25,27 @@ def withdraw_credit(user_id, amount):
 
 def deposit_credit(user_id, amount):
     db.credits.update_one({"user_id": user_id}, {"$inc": {"amount": amount}}, upsert=True)
-    
+
 def adjust_credit(user_id, amount):
     db.credits.update_one({"user_id": user_id}, {"$inc": {"amount": amount}}, upsert=True)
+
+def create_withdrawal_request(user_id, amount):
+    request_id = str(uuid.uuid4())
+    withdrawal_request = {
+        "request_id": request_id,
+        "user_id": user_id,
+        "amount": amount,
+        "status": "pending"
+    }
+    db.withdrawal_requests.insert_one(withdrawal_request)
+    return request_id
+
+def get_withdrawal_requests(status=None):
+    query = {"status": status} if status else {}
+    return list(db.withdrawal_requests.find(query))
+
+def get_user_withdrawal_requests(user_id):
+    return list(db.withdrawal_requests.find({"user_id": user_id}))
+
+def update_withdrawal_request_status(request_id, status):
+    db.withdrawal_requests.update_one({"request_id": request_id}, {"$set": {"status": status}})
