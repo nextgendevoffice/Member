@@ -58,3 +58,5 @@ def reject_withdrawal_request(request_id):
         return True
     return False
 
+def update_withdrawal_request_status(request_id, status):
+    db.withdrawal_requests.update_one({"request_id": request_id}, {"$set": {"status": status}})
