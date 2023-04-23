@@ -11,10 +11,12 @@ handler = WebhookHandler(LINE_CHANNEL_SECRET)
 # Add your LINE@ event handling functions here
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    text = event.message.text.lower()
+    text = event.message.text
     user_id = event.source.user_id
 
-    if text == "/join":
+    command = text.split(" ")[0].lower()
+
+    if command == "/join":
         # Check if the user is already a member
         existing_member = mongodb.get_member(user_id)
         if existing_member:
@@ -30,14 +32,14 @@ def handle_message(event):
                 event.reply_token,
                 TextSendMessage(text="You have successfully joined as a member!")
             )
-    elif text == "/credit":
+    elif command == "/credit":
             credit = mongodb.get_credit(user_id)
             line_bot_api.reply_message(
             event.reply_token,
             TextSendMessage(text=f"Your current credit is: {credit}")
             )
 
-    elif text.startswith("/withdraw"):
+    elif command == "/withdraw":
         amount = parse_amount(text)
         if amount:
             success, new_credit = mongodb.withdraw_credit(user_id, amount)
@@ -58,7 +60,7 @@ def handle_message(event):
             )
     elif user_id in ADMINS:
         
-        if text.startswith("/increase"):
+        if command == "/increase":
             target_user_id, amount = parse_user_and_amount(text)
             if target_user_id and amount:
                 mongodb.adjust_credit(target_user_id, amount)
@@ -72,7 +74,7 @@ def handle_message(event):
                     TextSendMessage(text="Invalid command format. Example: /increase USER_ID 50")
                 )
 
-        elif text.startswith("/decrease"):
+        elif command == "/decrease":
             target_user_id, amount = parse_user_and_amount(text)
             if target_user_id and amount:
                 mongodb.adjust_credit(target_user_id, -amount)
