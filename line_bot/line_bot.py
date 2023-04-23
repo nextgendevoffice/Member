@@ -104,10 +104,15 @@ def handle_message(event):
                 TextSendMessage(text=f"Pending withdrawal requests:\n{pending_list}")
             )
     elif command == "/approve" or command == "/reject":
+        try:
             _, request_id = text.split(" ")
+            print(f"Command: {command}, Request ID: {request_id}")
+
             if command == "/approve":
                 new_status = "approved"
                 success = mongodb.approve_withdrawal_request(request_id)
+                print(f"Success: {success}")
+
                 if success:
                     line_bot_api.reply_message(
                         event.reply_token,
@@ -121,6 +126,8 @@ def handle_message(event):
             else:
                 new_status = "rejected"
                 success = mongodb.reject_withdrawal_request(request_id)
+                print(f"Success: {success}")
+
                 if success:
                     line_bot_api.reply_message(
                         event.reply_token,
@@ -131,6 +138,13 @@ def handle_message(event):
                         event.reply_token,
                         TextSendMessage(text=f"Error: withdrawal request {request_id} not found or has already been processed.")
                     )
+        except Exception as e:
+            print(f"Error: {str(e)}")
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text=f"An error occurred while processing the command.")
+            )
+
     # Handle other text messages and commands...
 
 def parse_amount(text):
