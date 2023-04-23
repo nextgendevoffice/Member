@@ -42,23 +42,23 @@ def handle_message(event):
     elif command == "/withdraw":
         amount = parse_amount(text)
         if amount:
-            success, new_credit = mongodb.withdraw_credit(user_id, amount)  # This line was missing in your code
-        if success:
-            request_id = mongodb.create_withdrawal_request(user_id, amount)
-            line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(text=f"Withdrawal request created. Your request ID is: {request_id}")
-            )
+            success, new_credit = mongodb.withdraw_credit(user_id, amount)
+            if success:
+                request_id = mongodb.create_withdrawal_request(user_id, amount)
+                line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(text=f"Withdrawal request created. Your request ID is: {request_id}")
+                )
             else:
-            line_bot_api.reply_message(
-                event.reply_token,
-                TextSendMessage(text="Insufficient credit or invalid amount.")
+                line_bot_api.reply_message(
+                    event.reply_token,
+                    TextSendMessage(text="Insufficient credit or invalid amount.")
                 )
         else:
             line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text="Invalid command format. Example: /withdraw 50")
-        )
+                event.reply_token,
+                TextSendMessage(text="Invalid command format. Example: /withdraw 50")
+            )
     elif command == "/withdrawhistory":
         withdrawal_requests = mongodb.get_user_withdrawal_requests(user_id)
         withdrawal_history = "\n".join([f"Request ID: {req['request_id']} | Amount: {req['amount']} | Status: {req['status']}" for req in withdrawal_requests])
