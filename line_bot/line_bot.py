@@ -61,6 +61,7 @@ def handle_message(event):
                 TextSendMessage(text="Invalid command format. Example: /withdraw 50"),
             )
     elif command == "/withdrawhistory":
+        withdrawal_requests = mongodb.get_withdrawal_requests(user_id)
         print(f"User ID: {user_id}")  # Debugging line
         print(f"Withdrawal Requests: {withdrawal_requests}")  # Debugging line
         withdrawal_history = "\n".join(
