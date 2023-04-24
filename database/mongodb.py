@@ -54,9 +54,13 @@ def approve_withdrawal_request(request_id):
 def reject_withdrawal_request(request_id):
     request = db.withdrawal_requests.find_one({"request_id": request_id})
     if request and request["status"] == "pending":
+        user_id = request["user_id"]
+        amount = request["amount"]
         update_withdrawal_request_status(request_id, "rejected")
+        deposit_credit(user_id, amount)
         return True
     return False
+
 
 def update_withdrawal_request_status(request_id, status):
     db.withdrawal_requests.update_one({"request_id": request_id}, {"$set": {"status": status}})
