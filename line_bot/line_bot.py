@@ -138,6 +138,14 @@ def handle_message(event):
                 _, request_id = text.split(" ")
                 print(f"Command: {command}, Request ID: {request_id}")
 
+                request = mongodb.get_withdrawal_request(request_id)  # Fetch the withdrawal request from the database
+                if not request:
+                    line_bot_api.reply_message(
+                        event.reply_token,
+                        TextSendMessage(text=f"Error: withdrawal request {request_id} not found.")
+                    )
+                    return
+
                 if command == "/approve":
                     new_status = "approved"
                     success = mongodb.approve_withdrawal_request(request_id)
