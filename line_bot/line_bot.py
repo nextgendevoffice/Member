@@ -138,7 +138,8 @@ def handle_message(event):
                 _, request_id = text.split(" ")
                 print(f"Command: {command}, Request ID: {request_id}")
 
-                request = mongodb.get_withdrawal_request(request_id)  # Fetch the withdrawal request from the database
+                request = mongodb.get_withdrawal_requests(request_id=request_id)  # Fetch the withdrawal request from the database
+                
                 if not request:
                     line_bot_api.reply_message(
                         event.reply_token,
