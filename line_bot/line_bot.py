@@ -93,34 +93,34 @@ def handle_message(event):
                 mongodb.adjust_credit(target_user_id, amount)
                 line_bot_api.reply_message(
                     event.reply_token,
-                    TextSendMessage(
-                        text=f"Increased {amount} credit for user {target_user_id}."
-                    ),
+                    TextSendMessage(text=f"Increased {amount} credit for user {target_user_id}.")
+                )
+                line_bot_api.push_message(
+                    target_user_id,
+                    TextSendMessage(text=f"Your credit has been increased by {amount}.")
                 )
             else:
                 line_bot_api.reply_message(
                     event.reply_token,
-                    TextSendMessage(
-                        text="Invalid command format. Example: /increase USER_ID 50"
-                    ),
-                )
+                    TextSendMessage(text="Invalid command format. Example: /increase USER_ID 50")
+            )    
         elif command == "/decrease":
             target_user_id, amount = parse_user_and_amount(text)
             if target_user_id and amount:
                 mongodb.adjust_credit(target_user_id, -amount)
                 line_bot_api.reply_message(
                     event.reply_token,
-                    TextSendMessage(
-                        text=f"Decreased {amount} credit for user {target_user_id}."
-                    ),
+                    TextSendMessage(text=f"Decreased {amount} credit for user {target_user_id}.")
                 )
+                line_bot_api.push_message(
+                    target_user_id,
+                    TextSendMessage(text=f"Your credit has been decreased by {amount}.")
+                ) 
             else:
                 line_bot_api.reply_message(
                     event.reply_token,
-                    TextSendMessage(
-                        text="Invalid command format. Example: /decrease USER_ID 50"
-                    ),
-                )
+                    TextSendMessage(text="Invalid command format. Example: /decrease USER_ID 50")
+            )       
         elif command == "/withdrawlist":
             pending_requests = mongodb.get_withdrawal_requests(status="pending")
             pending_list = "\n".join(
@@ -146,17 +146,18 @@ def handle_message(event):
                     if success:
                         line_bot_api.reply_message(
                             event.reply_token,
-                            TextSendMessage(
-                                text=f"Withdrawal request {request_id} has been {new_status}."
-                            ),
+                            TextSendMessage(text=f"Withdrawal request {request_id} has been {new_status}.")
+                        )
+                        target_user_id = request["user_id"]
+                        line_bot_api.push_message(
+                            target_user_id,
+                            TextSendMessage(text=f"Your withdrawal request (ID: {request_id}) has been {new_status}.")
                         )
                     else:
                         line_bot_api.reply_message(
-                            event.reply_token,
-                            TextSendMessage(
-                                text=f"Error: withdrawal request {request_id} not found or has already been processed."
-                            ),
-                        )
+                        event.reply_token,
+                        TextSendMessage(text=f"Error: withdrawal request {request_id} not found or has already been processed.")
+                )
                 else:
                     new_status = "rejected"
                     success = mongodb.reject_withdrawal_request(request_id)
