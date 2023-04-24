@@ -61,7 +61,7 @@ def get_withdrawal_requests(status=None, user_id=None):
     return list(db.withdrawal_requests.find(query))
 
 def get_withdrawal_request(request_id):
-    result = withdrawal_requests_collection.find_one({"request_id": request_id})
+    result = db.withdrawal_requests.find_one({"request_id": request_id})  # Changed from 'withdrawal_requests_collection'
     return result
 
 
