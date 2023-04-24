@@ -61,19 +61,25 @@ def handle_message(event):
                 TextSendMessage(text="Invalid command format. Example: /withdraw 50"),
             )
     elif command == "/withdrawhistory":
-        withdrawal_requests = mongodb.get_withdrawal_requests(user_id)
+        withdrawal_requests = mongodb.get_withdrawal_requests(user_id=user_id)
         print(f"User ID: {user_id}")  # Debugging line
         print(f"Withdrawal Requests: {withdrawal_requests}")  # Debugging line
-        withdrawal_history = "\n".join(
-            [
-                f"Request ID: {req['request_id']} | Amount: {req['amount']} | Status: {req['status']}"
-                for req in withdrawal_requests
-            ]
-        )
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=f"Your withdrawal history:\n{withdrawal_history}"),
-        )
+        if not withdrawal_requests:
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text="You have no withdrawal history."),
+            )
+        else:
+            withdrawal_history = "\n".join(
+                [
+                    f"Request ID: {req['request_id']} | Amount: {req['amount']} | Status: {req['status']}"
+                    for req in withdrawal_requests
+                ]
+            )
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text=f"Your withdrawal history:\n{withdrawal_history}"),
+            )
     # Admin commands
     elif user_id in ADMINS:
         if command == "/increase":
