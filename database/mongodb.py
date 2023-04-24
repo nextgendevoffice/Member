@@ -60,6 +60,10 @@ def get_withdrawal_requests(status=None, user_id=None):
         query["user_id"] = user_id
     return list(db.withdrawal_requests.find(query))
 
+def get_withdrawal_request(request_id):
+    result = withdrawal_requests_collection.find_one({"request_id": request_id})
+    return result
+
 
 def approve_withdrawal_request(request_id):
     request = db.withdrawal_requests.find_one({"request_id": request_id})

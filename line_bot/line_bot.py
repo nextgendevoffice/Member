@@ -138,54 +138,43 @@ def handle_message(event):
                 _, request_id = text.split(" ")
                 print(f"Command: {command}, Request ID: {request_id}")
 
-                request = mongodb.get_withdrawal_requests(request_id=request_id)  # Fetch the withdrawal request from the database
-                
+        # Get the request by its ID
+                request = mongodb.get_withdrawal_request(request_id)
+
                 if not request:
                     line_bot_api.reply_message(
                         event.reply_token,
-                        TextSendMessage(text=f"Error: withdrawal request {request_id} not found.")
+                        TextSendMessage(
+                            text=f"Error: withdrawal request {request_id} not found or has already been processed."
+                        ),
                     )
                     return
 
                 if command == "/approve":
                     new_status = "approved"
                     success = mongodb.approve_withdrawal_request(request_id)
-                    print(f"Success: {success}")
-
-                    if success:
-                        line_bot_api.reply_message(
-                            event.reply_token,
-                            TextSendMessage(text=f"Withdrawal request {request_id} has been {new_status}.")
-                        )
-                        target_user_id = request["user_id"]
-                        line_bot_api.push_message(
-                            target_user_id,
-                            TextSendMessage(text=f"Your withdrawal request (ID: {request_id}) has been {new_status}.")
-                        )
-                    else:
-                        line_bot_api.reply_message(
-                        event.reply_token,
-                        TextSendMessage(text=f"Error: withdrawal request {request_id} not found or has already been processed.")
-                )
                 else:
                     new_status = "rejected"
                     success = mongodb.reject_withdrawal_request(request_id)
-                    print(f"Success: {success}")
 
-                    if success:
-                        line_bot_api.reply_message(
-                            event.reply_token,
-                            TextSendMessage(
-                                text=f"Withdrawal request {request_id} has been {new_status}."
-                            ),
-                        )
-                    else:
-                        line_bot_api.reply_message(
-                            event.reply_token,
-                            TextSendMessage(
-                                text=f"Error: withdrawal request {request_id} not found or has already been processed."
-                            ),
-                        )
+                if success:
+                    line_bot_api.reply_message(
+                        event.reply_token,
+                        TextSendMessage(text=f"Withdrawal request {request_id} has been {new_status}.")
+                    )
+                    target_user_id = request["user_id"]
+                    line_bot_api.push_message(
+                        target_user_id,
+                        TextSendMessage(text=f"Your withdrawal request (ID: {request_id}) has been {new_status}.")
+                    )
+                else:
+                    line_bot_api.reply_message(
+                        event.reply_token,
+                        TextSendMessage(
+                            text=f"Error: withdrawal request {request_id} not found or has already been processed."
+                        ),
+                    )
+
             except Exception as e:
                 print(f"Error: {str(e)}")
                 line_bot_api.reply_message(
@@ -194,6 +183,7 @@ def handle_message(event):
                         text=f"An error occurred while processing the command: {str(e)}"
                     ),
                 )
+
 
     # Handle other text messages and commands...
 

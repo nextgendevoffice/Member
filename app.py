@@ -1,6 +1,7 @@
 from flask import Flask, request, abort
 from line_bot.line_bot import line_bot_api, handler
 from database import mongodb
+from database.mongodb import get_withdrawal_request
 
 app = Flask(__name__)
 
