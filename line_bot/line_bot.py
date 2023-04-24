@@ -38,6 +38,11 @@ def handle_message(event):
         line_bot_api.reply_message(
             event.reply_token, TextSendMessage(text=f"Your current credit is: {credit}")
         )
+    elif command == "/user":
+            line_bot_api.reply_message(
+                event.reply_token,
+                TextSendMessage(text=f"Your user ID: {user_id}")
+        )
     elif command == "/withdraw":
         amount = parse_amount(text)
         if amount:
