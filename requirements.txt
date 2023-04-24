@@ -3,3 +3,4 @@ pymongo
 line-bot-sdk
 python-dotenv
 gunicorn
+requests==2.26.0

@@ -4,6 +4,8 @@ from config import LINE_CHANNEL_ACCESS_TOKEN, LINE_CHANNEL_SECRET
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 from database import mongodb
 from config import ADMINS
+from linebot.models import LocationMessage
+import requests
 
 line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
@@ -184,8 +186,29 @@ def handle_message(event):
                     ),
                 )
 
+@handler.add(MessageEvent, message=LocationMessage)
+def handle_location_message(event):
+    latitude = event.message.latitude
+    longitude = event.message.longitude
 
-    # Handle other text messages and commands...
+    # Call a function to get the province name from the latitude and longitude
+    province_name = get_province_name(latitude, longitude)
+
+    line_bot_api.reply_message(
+        event.reply_token,
+        TextSendMessage(text=f"Your current province is: {province_name}")
+    )
+
+# Add the get_province_name function here
+def get_province_name(latitude, longitude):
+    nominatim_url = f"https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat={latitude}&lon={longitude}"
+    response = requests.get(nominatim_url)
+    data = response.json()
+
+    province_name = data.get("address", {}).get("state")
+    return province_name
+
+# Handle other text messages and commands...
 
 
 def parse_amount(text):
